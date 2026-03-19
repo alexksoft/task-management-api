@@ -1,6 +1,6 @@
 # Task Management API
 
-A RESTful API for task management with JWT authentication built using Spring Boot and MySQL.
+A RESTful API for task management with JWT authentication and Kafka message broker built using Spring Boot and MySQL.
 
 ## Features
 
@@ -11,6 +11,7 @@ A RESTful API for task management with JWT authentication built using Spring Boo
 - Pagination support
 - Input validation
 - Comprehensive error handling
+- Kafka message broker for task events
 
 ## Tech Stack
 
@@ -18,7 +19,9 @@ A RESTful API for task management with JWT authentication built using Spring Boo
 - Spring Boot 3.2.0
 - Spring Security
 - Spring Data JPA
+- Spring Kafka
 - MySQL 8.0
+- Apache Kafka
 - JWT (JSON Web Tokens)
 - Maven
 - Lombok
@@ -28,6 +31,7 @@ A RESTful API for task management with JWT authentication built using Spring Boo
 - JDK 17 or higher
 - Maven 3.6+
 - MySQL 8.0+
+- Apache Kafka 3.x+
 
 ## Database Setup
 
@@ -42,6 +46,41 @@ CREATE DATABASE task_management_db;
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 ```
+
+## Kafka Setup
+
+### Option 1: Using Docker (Recommended)
+
+1. Make sure Docker is installed and running
+2. Start Kafka and Zookeeper:
+```bash
+docker-compose up -d
+```
+
+3. Verify containers are running:
+```bash
+docker ps
+```
+
+4. Stop containers:
+```bash
+docker-compose down
+```
+
+### Option 2: Manual Installation
+
+1. Download and install Apache Kafka from https://kafka.apache.org/downloads
+2. Start Zookeeper:
+```bash
+bin/zookeeper-server-start.sh config/zookeeper.properties
+```
+
+3. Start Kafka broker:
+```bash
+bin/kafka-server-start.sh config/server.properties
+```
+
+4. The application will automatically create the `task-events` topic on startup
 
 ## Installation & Running
 
@@ -245,7 +284,40 @@ src/main/java/com/taskmanager/api/
 ├── repository/      # Data access layer
 ├── security/        # JWT utilities and filters
 └── service/         # Business logic
+
+src/test/java/com/taskmanager/api/
+├── controller/      # Controller integration tests
+├── repository/      # Repository integration tests
+└── service/         # Service unit tests
 ```
+
+## Running Tests
+
+```bash
+# Run all tests
+mvn test
+
+# Run specific test class
+mvn test -Dtest=TaskServiceTest
+
+# Run tests with coverage
+mvn clean test jacoco:report
+```
+
+## Test Coverage
+
+- **Service Layer**: Unit tests with Mockito
+  - TaskServiceTest - CRUD operations and Kafka integration
+  - AuthServiceTest - Registration and login
+  - KafkaProducerServiceTest - Event publishing
+
+- **Controller Layer**: Integration tests with MockMvc
+  - TaskControllerTest - REST endpoint testing
+  - AuthControllerTest - Authentication endpoints
+
+- **Repository Layer**: Integration tests with DataJpaTest
+  - TaskRepositoryTest - Database operations
+  - UserRepositoryTest - User queries
 
 ## Testing with Postman
 
@@ -255,6 +327,26 @@ src/main/java/com/taskmanager/api/
    - Type: Bearer Token
    - Token: <paste-your-token>
 4. Test CRUD operations on tasks
+5. Check application logs to see Kafka events being published and consumed
+
+## Kafka Events
+
+The application publishes the following events to the `task-events` topic:
+
+- **TASK_CREATED** - When a new task is created
+- **TASK_UPDATED** - When a task is updated
+- **TASK_DELETED** - When a task is deleted
+
+Each event contains:
+```json
+{
+  "eventType": "TASK_CREATED",
+  "taskId": 1,
+  "title": "Task title",
+  "userEmail": "user@example.com",
+  "timestamp": "2024-01-15T10:30:00"
+}
+```
 
 ## Notes
 

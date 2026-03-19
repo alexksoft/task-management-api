@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Task Management API",
-    "description": "Collection for Task Management API with JWT Authentication",
+    "description": "Collection for Task Management API with JWT Authentication and Kafka Events",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -95,6 +95,22 @@
       "item": [
         {
           "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Kafka event published (check logs)\", function () {",
+                  "    console.log(\"Task created - Kafka TASK_CREATED event should be published\");",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -164,6 +180,22 @@
         },
         {
           "name": "Update Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Kafka event published (check logs)\", function () {",
+                  "    console.log(\"Task updated - Kafka TASK_UPDATED event should be published\");",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -189,6 +221,22 @@
         },
         {
           "name": "Delete Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Kafka event published (check logs)\", function () {",
+                  "    console.log(\"Task deleted - Kafka TASK_DELETED event should be published\");",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [
